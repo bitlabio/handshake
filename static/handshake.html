@@ -1,0 +1,195 @@
+<html>	
+
+	<head>
+		<title>Handshake</title>
+		<style>
+			* {margin: 0; padding: 0; }
+			body { 
+				background: #2b2b2b; 
+				padding: 0em;
+				margin: 0em;
+				color: #c2b3a6; 
+				font-family: 'helvetica', sans-serif;
+			}
+
+			#logo { cursor: pointer; }
+			.caps { text-transform: uppercase; font-weight: 800; }
+			canvas { width: 100%; height: 100%; }
+			#wrapper { 
+				width: 100%; 
+				max-width: 600px;
+				text-align: center; 
+				overflow: hidden;
+				padding: 0;
+				margin: 0 auto;
+				 }
+		  #signupbutton {
+		  	border:2px solid #FFCD28;background-color:#f6b727;
+		  	cursor: pointer;
+		  }
+
+		  #signupbutton:hover {
+		  	border:2px solid #FFDE49;
+		  	background-color: #f8c838;
+		  }
+
+		  a {
+		  	color: #f6b727;
+		  	text-decoration: none;
+		  }
+
+		  a:hover {
+		  	color: #f8c838;
+		  }
+
+		  .inputs { 
+		  	color: #f1af10;
+		  	padding: 0.75em; 
+		  	font-size: 16px;
+		  	-webkit-border-radius: 8px 8px 8px 8px;
+		  	-moz-border-radius: 8px 8px 8px 8px;
+		  	border-radius: 8px 8px 8px 8px; 
+		  	border: 2px solid #303030;
+		  	margin: 0em auto; 
+		  	background: #22201f;
+		  }
+
+		  	.inputs:focus {
+		  		  outline: none;
+		  	}
+
+		  	.smallbutton {
+		  	padding-top: 0.9em; 
+		  	font-size: 16px;
+		  	-webkit-border-radius: 8px 8px 8px 8px;
+		  	-moz-border-radius: 8px 8px 8px 8px;
+		  	border-radius: 8px 8px 8px 8px; 
+		  	border:2px solid #FFCD28;background-color:#f6b727;
+		  	cursor: pointer;
+		  	color: #1c1c1c; 
+		  	font-weight: bold;
+		  	text-align: center;
+		  	height: 32px;
+		  	margin-top: 2px;
+		  	}
+
+		  	.smallbutton:hover {
+
+		  	border:2px solid #FFDE49;
+		  	background-color: #f8c838;
+		  	}
+
+.container {
+   height: auto;
+   overflow: hidden;
+}
+    
+.right {
+    width: 80px;
+    float: right;
+}
+
+.left {
+    float: none; /* not needed, just for clarification */
+    
+    /* the next props are meant to keep this block independent from the other floated one */
+    width: auto;
+    overflow: hidden;
+}
+
+		</style>  
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/processing.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="/handshake_app.js"></script>
+
+	</head>
+
+	<body>
+
+	<div id="wrapper">
+
+			<img id="logo" src="/img/logo.jpg" style="width: 185px; max-width: 100%; margin-top: 1em; ">
+
+					<div id="sloganblock" style="padding-top: 1em; margin: 1em; ">
+						<i class="caps" style="font-size: 11px;">
+						We connect trained earthmoving operators 
+			with project contractors in Australia.
+						</i>
+					</div>
+
+			<div id="signupbuttonblock" style="margin: 1em;">
+				<div id="signupbutton" style="padding: 0.75em; -webkit-border-radius: 15px 15px 20px 15px;-moz-border-radius: 15px 15px 20px 15px;border-radius: 15px 15px 20px 15px; max-width: 300px; margin: 0 auto;">
+					<div style="float:left;"><img src="/img/icon_profile.png" width="50" height="50" style=""></div>
+					<div style="margin-left: 0.5em;  margin-top: 0.3em; font-weight: 800; margin-right: 0.5em; color: #3a3a3a;">
+						<span style="font-size: 18px; ">SETUP YOUR PROFILE</span><br>
+						<i style="font-size: 12px;">JOIN US. FREE FOR 12 MONTHS!</i>
+					</div>
+				</div>
+			</div>
+
+			<div id="profile" style="margin: 1em;">
+				<h4 style="margin-top: 3em; margin-bottom: 1em; text-align: left;padding-left: 1em;">What is your name?</h4>
+				<div class="container">
+		        <div class="right">
+		            <div id="profilenext" class="smallbutton" style="width: auto; ">next</div>
+		        </div>
+		        <div class="left">
+		        		<div style="padding-right: 1em;">
+		        		<input id="name" class="inputs" style="padding: 1em;width: 100%; ">
+		        		</div>
+		        </div>
+		    </div>
+			</div>
+
+
+
+			<div id="profileEmail" style="margin: 1em;">
+				<h4 id="profileEmailQuestion" style="margin-top: 3em; margin-bottom: 1em; text-align: left;padding-left: 1em;">Your E-mail address?</h4>
+				<div class="container">
+		        <div class="right">
+		            <div id="profilenextemail" class="smallbutton" style="width: auto; ">next</div>
+		        </div>
+		        <div class="left">
+		        		<div style="padding-right: 1em;">
+		        		<input id="email" class="inputs" style="padding: 1em;width: 100%; ">
+		        		</div>
+		        </div>
+		    </div>
+			</div>
+
+
+			<div id="profileSkills" style="margin: 1em;">
+				<h4 id="profileSkillsQuestion" style="margin-top: 3em; margin-bottom: 1em; text-align: left;padding-left: 1em;">What licensed skills?</h4>
+				<div class="container">
+		        <div class="right">
+		            <div class="smallbutton" style="width: auto; ">next</div>
+		        </div>
+		        <div class="left">
+		        		<div style="padding-right: 1em;">
+		        		<input id="email" class="inputs" style="padding: 1em;width: 100%; ">
+		        		</div>
+		        </div>
+		    </div>
+			</div>
+
+
+
+			<div id="managerlink" style="padding-top: 1em; margin-bottom: 1em; ">
+				<i class="caps" style="font-size: 11px;">
+				Project managers <a href="#">click here</a>
+				</i>
+			</div>	
+
+			<div id="mapblock" style="padding-top: 1em;">
+				<img src="/img/map.jpg" style="width: 100%;">
+			</div>	
+
+	</div>
+		
+		
+
+	</body>
+
+</html>
