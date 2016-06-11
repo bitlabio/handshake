@@ -74,6 +74,6 @@ app.get('/profile/email', apphandler);
 app.get('/profile/skills', apphandler);
 
 
-http.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+http.listen(80, function () {
+  console.log('Handshake App running!');
 });

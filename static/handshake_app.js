@@ -1,3 +1,13 @@
+var skillsdb = []
+skillsdb.push("Roller 317E")
+skillsdb.push("Skidsteer 318E")
+skillsdb.push("Backhoe 319D")
+skillsdb.push("Excavator 320E")
+skillsdb.push("Front End Loader 321E")
+skillsdb.push("Bulldozer 323D")
+skillsdb.push("Grader 324E")
+skillsdb.push("Dump Truck 337D")
+
 var state = {
 	url : "/"
 }
@@ -74,8 +84,63 @@ function renderProfileEmail() {
 	})
 }
 
+var skillsadded = []
+
+function skillreclist() {
+	var filter = $("#skillinput").val().toLowerCase()
+	var skillrec = ""
+	for (var s in skillsdb) {
+		if (skillsdb[s].toLowerCase().indexOf( filter ) >= 0) {
+			var chosen = 0
+			for (var c in skillsadded) { if (skillsadded[c] == skillsdb[s]) { chosen = 1}}
+			if (chosen == 0) { skillrec += '<span class="skillreq">'+skillsdb[s] + "</span><br>"	}
+		}
+	}
+	
+	$("#skillrecommend").html(skillrec)
+	skillclick();	//make them clickable
+}
+
+function skillclickremove() {
+	$(".skilladdedlistitem").click( function(e) {
+		console.log($(this).context.textContent)
+		var removeid = -1;
+		for (var s in skillsadded) { if (skillsadded[s] == $(this).context.textContent) { removeid = s } }
+		console.log(removeid)
+		skillsadded.splice(removeid, 1)
+		//display selected skills
+		renderSkillsAdded()
+	})
+}
+
+function renderSkillsAdded() {
+	//display selected skills
+		var skillsaddedhtml = ""
+		for (var s in skillsadded) { skillsaddedhtml+= '<span class="skilladdedlistitem">'+skillsadded[s] + "</span><br>" }
+		$("#skillsadded").html(skillsaddedhtml)
+		skillclickremove(); //make removable click work
+		skillreclist();
+}
+
+function skillclick() {
+	$(".skillreq").click( function(e) {
+		$("#skillinput").val("").focus();
+		console.log($(this).context.textContent)
+		skillsadded.push($(this).context.textContent)
+
+		//display selected skills
+		renderSkillsAdded()
+
+	})
+}
+
 function renderProfileSkills() {
 	$("#profileSkills").fadeIn();
+	skillreclist();
+	$("#skillinput").on('propertychange input', function (e) {
+		console.log($("#skillinput").val())
+		skillreclist();
+	});
 }
 
 
@@ -89,10 +154,22 @@ function getStateUrl() {
 	var a = getAbsolutePath().length
 	var b = ""+document.location
 	//var c = b.slice(a)
-	var c = b.slice("http://localhost:3000".length)
+
+	//console.log("b"+b)
+	//console.log(b.indexOf("://"))
+	var t = b.slice(b.indexOf("://")+3)
+	if ( t.indexOf(":") >= 0 ) {
+		console.log("non standard port!")
+	}
+	//console.log(t)
+	//console.log(t.indexOf("/"))
+	//var c = b.slice("http://localhost:3000".length)
+	var c = t.slice(t.indexOf("/"))
+	//console.log(c)
+
 	//console.log(a)
 	//console.log(b)
-	console.log(c)
+	
 	//console.log("getStateUrl: "+b.slice(a))
 	return c
 }
