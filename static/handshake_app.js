@@ -1,16 +1,27 @@
 var skillsdb = []
-skillsdb.push("Roller 317E")
-skillsdb.push("Skidsteer 318E")
-skillsdb.push("Backhoe 319D")
-skillsdb.push("Excavator 320E")
-skillsdb.push("Front End Loader 321E")
-skillsdb.push("Bulldozer 323D")
-skillsdb.push("Grader 324E")
-skillsdb.push("Dump Truck 337D")
+skillsdb.push("VOC Civil")
+skillsdb.push("VOC Mining")
+skillsdb.push("Roller RIIMPO317E")
+skillsdb.push("Skidsteer RIIMPO318E")
+skillsdb.push("Backhoe RIIMPO319D")
+skillsdb.push("Excavator RIIMPO320E")
+skillsdb.push("Front End Loader RIIMPO321E")
+skillsdb.push("Bulldozer RIIMPO323D")
+skillsdb.push("Grader RIIMPO324E")
+skillsdb.push("Dump/Haul Truck RIIMPO337D")
+
 
 var state = {
 	url : "/"
 }
+
+var userdata = {}
+userdata.name = ""
+userdata.email = ""
+userdata.location = {}
+userdata.ip = ""
+userdata.skills = []
+
 
 var socket = io();
 
@@ -31,6 +42,7 @@ function hideall() {
 	$("#profile").hide();
 	$("#profileEmail").hide();
 	$("#profileSkills").hide();
+	$("#messageBox").hide();
 }
 
 function renderHome() {
@@ -40,7 +52,7 @@ function renderHome() {
 	$("#logo").show();
 	$("#sloganblock").show();
 	$("#signupbuttonblock").show();
-	$("#managerlink").show();
+	//$("#managerlink").show();
 	$("#mapblock").show();
 
 	$("#logo").click(function() {
@@ -66,6 +78,8 @@ function renderProfile() {
 	$("#name").focus();
 
 	$("#profilenext").click( function () {
+		userdata.name = $("#name").val();
+		console.log(userdata)
 		state.url = "/profile/email"
 		window.history.pushState(state, 'Set Email', '/profile/email');
 		render();		
@@ -78,6 +92,9 @@ function renderProfileEmail() {
 	$("#email").focus();
 
 	$("#profilenextemail").click( function() {
+		userdata.email = $("#email").val();
+		console.log(userdata)
+
 		state.url = "/profile/skills"
 		window.history.pushState(state, 'Set Skills', '/profile/skills');
 		render();	
@@ -141,6 +158,31 @@ function renderProfileSkills() {
 		console.log($("#skillinput").val())
 		skillreclist();
 	});
+
+	$("#skillsdone").click( function (e) {
+		console.log("done!?")
+		userdata.skills = skillsadded;
+		$("#profileSkills").hide();
+
+		$("#messageBoxText").html("Uploading profile...");
+		$("#messageBox").fadeIn();
+
+		/////////
+
+		$.ajax({
+		    url: '/api/signup', 
+		    type: 'POST', 
+		    contentType: 'application/json', 
+		    data: JSON.stringify(userdata) }
+		).done(function( serverresponse ) {
+				$("#messageBoxText").html("SUCCESS. THANK YOU.<br>Keep an eye on your email for jobs.");
+		});
+
+		
+		/////////
+
+	})
+
 }
 
 
@@ -186,6 +228,26 @@ function render() {
 $(document).ready(function() 
 {
 	console.log("handshake app loading..")
+
+	console.log("requesting ip information")
+	$.ajax({
+    url: '/api/ip',
+    type: "GET",
+    success: function (ipdata) {
+        console.log("ip:"+JSON.stringify(ipdata));
+        userdata.ip = ipdata;
+    }
+	});
+
+	console.log("requesting location information")
+	$.ajax({
+    url: '/api/location',
+    type: "GET",
+    success: function (locdata) {
+        console.log("location:"+JSON.stringify(locdata));
+        userdata.location = locdata;
+    }
+	});
 
 	var url = getStateUrl();
 	if (url != "") { state.url = url } else { url = "/"}

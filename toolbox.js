@@ -1,6 +1,41 @@
 console.log('loading toolbox.js');
 
+var mongojs     = require('mongojs')
+var db          = mongojs('handshake',["geoblocks","geolocation"]);
+
 var toolbox = {}
+
+toolbox.cleanIp = function(ip) {
+  var a = ip
+  a = a.split(":")
+  var b = a[a.length-1]
+  return b;
+}
+
+toolbox.lookupIp = function(ip, cb) {
+  // https://github.com/bitlabio/locationjs
+  var ip_prep = ip;
+    ip_prep = ip_prep.split('.');            
+    var integer_ip = (16777216*ip_prep[0])+(65536*ip_prep[1])+(256*ip_prep[2])+(ip_prep[3]*1);
+    console.log(integer_ip)
+
+    db.geoblocks.findOne({startIpNum:{$lte: integer_ip}, endIpNum:{$gte: integer_ip}}, function (err, res) {
+
+      console.log("res:")
+      console.log(res)
+      if (res != null) {
+        db.geolocation.findOne({locId:res.locId}, function (err, loc) { 
+          //console.log(loc)
+          cb(loc);
+        })
+      } else {
+          return;
+      } 
+      
+    })
+
+}
+
 
 toolbox.randomHex = function(length) {
 	/* generates hexadecimal random string of a certain length */
