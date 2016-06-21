@@ -89,10 +89,7 @@ app.get('/profile/skills', apphandler);
 app.get('/admin/userslist', function (req, res) {
   db.users.find({}, function (err, dbres) {
     var output = ""
-
     output += "Number of users registered: #"+dbres.length + "<br><br>"
-
-
     for (var u in dbres) {
       output += JSON.stringify(dbres[u]) + "<br><br>"
     }
@@ -106,9 +103,29 @@ app.post('/api/signup', function (req, res) {
   console.log(req.body)
   var newuser = req.body
   newuser.created = Date.now()
-  db.users.save(newuser, function (err, dbres) {
-    res.end("saved")
-  })
+
+  if (newuser.geolocation) {
+    toolbox.lookupGps(newuser.geolocation.lat, newuser.geolocation.lon, function (dblookup) {
+      console.log("database location lookup:")
+      console.log(dblookup)
+      //WITH GPS
+      newuser.location = dblookup
+      db.users.save(newuser, function (err, dbres) {
+          res.end("saved")
+      })
+
+    } )
+  } else {
+
+    //NO GPS
+    db.users.save(newuser, function (err, dbres) {
+      res.end("saved")
+    })
+
+  }
+
+
+
 })
 
 app.get('/api/ip', function (req, res) {

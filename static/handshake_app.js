@@ -1,14 +1,15 @@
 var skillsdb = []
 skillsdb.push("VOC Civil")
-skillsdb.push("VOC Mining")
-skillsdb.push("Roller RIIMPO317E")
-skillsdb.push("Skidsteer RIIMPO318E")
-skillsdb.push("Backhoe RIIMPO319D")
-skillsdb.push("Excavator RIIMPO320E")
-skillsdb.push("Front End Loader RIIMPO321E")
-skillsdb.push("Bulldozer RIIMPO323D")
-skillsdb.push("Grader RIIMPO324E")
-skillsdb.push("Dump/Haul Truck RIIMPO337D")
+//skillsdb.push("VOC Mining")
+skillsdb.push("Roller RIIMPO317")
+skillsdb.push("Skidsteer RIIMPO318")
+skillsdb.push("Backhoe RIIMPO319")
+skillsdb.push("Excavator RIIMPO320")
+skillsdb.push("Front End Loader RIIMPO321")
+skillsdb.push("Bulldozer RIIMPO323")
+skillsdb.push("Grader RIIMPO324")
+skillsdb.push("Dump Truck RIIMPO337")
+skillsdb.push("Haul Truck RIIMPO337")
 
 
 var state = {
@@ -169,6 +170,7 @@ function renderProfileSkills() {
 
 		/////////
 
+		console.log(JSON.stringify(userdata))
 		$.ajax({
 		    url: '/api/signup', 
 		    type: 'POST', 
@@ -225,6 +227,12 @@ function render() {
 	if (state.url == "/profile/skills") { renderProfileSkills(); }
 }
 
+
+
+
+
+
+
 $(document).ready(function() 
 {
 	console.log("handshake app loading..")
@@ -240,6 +248,15 @@ $(document).ready(function()
 	});
 
 	console.log("requesting location information")
+  if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(geoloc) {
+      	userdata.geolocation = {};
+      	userdata.geolocation.accuracy = geoloc.coords.accuracy;
+      	userdata.geolocation.lat = geoloc.coords.latitude;
+      	userdata.geolocation.lon = geoloc.coords.longitude;
+      });
+  } 
+      
 	$.ajax({
     url: '/api/location',
     type: "GET",
@@ -248,6 +265,12 @@ $(document).ready(function()
         userdata.location = locdata;
     }
 	});
+  	
+
+
+
+
+
 
 	var url = getStateUrl();
 	if (url != "") { state.url = url } else { url = "/"}
