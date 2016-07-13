@@ -2,13 +2,23 @@
 var config = {}
 config.db = "handshake"
 
+//var env = process.env.NODE_ENV || 'development';
+var env = 'production';
+
 var express   = require('express');
 var app       = express();
 var fs        = require('fs');
 var path      = require("path");
 
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var http = require('http')
+var https = require('https')
+
+var credentials = {
+  ca : fs.readFileSync('sslcert/server.ca'),
+  key: fs.readFileSync('sslcert/server.key'),
+  cert: fs.readFileSync('sslcert/server.crt')
+};
+
 
 var mongojs     = require('mongojs')
 var db          = mongojs('handshake',["users"])
@@ -25,7 +35,6 @@ var bodyParser  = require('body-parser');
 //bitlab custom
 var toolbox = require('./toolbox');
 
-//app.use(bodyParser.json());
 
 app.use(session({
   name: 'session',
@@ -37,17 +46,7 @@ app.use(session({
 //io.sockets.emit("arduino", data)
 
 
-///////////////////////////////////////////
-// SOCKETS
 
-io.on('connection', function (socket) {
-  console.log("socket connected!")
-
-  socket.on('handshake', function(msg){
-    console.log('message: ' + msg);
-  });
-
-});
 
 
 
@@ -78,13 +77,23 @@ app.use(users);
 app.use(toolbox.logger);
 
 var apphandler = function (req, res) {
-  res.sendFile(path.join(__dirname+'/static/handshake.html'));  
+  console.log(req.headers)
+  
+  /*if (req.headers['x-forwarded-proto'] !== 'https') {
+    res.redirect(['https://', req.get('Host'), req.url].join(''));
+  } else {
+    
+  }*/
+
+  res.sendFile(path.join(__dirname+'/static/handshake.html'));    
 }
 
 app.get('/', apphandler);
 app.get('/profile', apphandler);
 app.get('/profile/email', apphandler);
+app.get('/profile/location', apphandler);
 app.get('/profile/skills', apphandler);
+app.get('/profile/*', apphandler);
 
 app.get('/admin/userslist', function (req, res) {
   db.users.find({}, function (err, dbres) {
@@ -99,33 +108,22 @@ app.get('/admin/userslist', function (req, res) {
   })
 })
 
+app.post('/api/gpslookup', function(req,res) {
+  // sends you the location data for a gps location
+  console.log(req.body)
+  toolbox.lookupGps(req.body.geolocation.lat, req.body.geolocation.lon, function (dblookup) {
+    console.log(dblookup);
+    res.json(dblookup);
+  });
+
+})
+
 app.post('/api/signup', function (req, res) {
   console.log(req.body)
   var newuser = req.body
   newuser.created = Date.now()
-
-  if (newuser.geolocation) {
-    toolbox.lookupGps(newuser.geolocation.lat, newuser.geolocation.lon, function (dblookup) {
-      console.log("database location lookup:")
-      console.log(dblookup)
-      //WITH GPS
-      newuser.location = dblookup
-      db.users.save(newuser, function (err, dbres) {
-          res.end("saved")
-      })
-
-    } )
-  } else {
-
-    //NO GPS
-    db.users.save(newuser, function (err, dbres) {
-      res.end("saved")
-    })
-
-  }
-
-
-
+  newuser.sessionhash = req.session.hash
+  db.users.save(newuser, function (err, dbres) { res.end("saved"); });
 })
 
 app.get('/api/ip', function (req, res) {
@@ -138,6 +136,32 @@ app.get('/api/location', function (req, res) {
   toolbox.lookupIp(ip, function (loc) { res.json(loc);  })
 })
 
-http.listen(80, function () {
-  console.log('Handshake App running!');
+
+
+var httpServer = http.createServer(function (req,res) {
+  console.log("REDIRECT TO HTTPS")
+  //var redirurl = ['https://handshake.ws', req.url].join('')
+  //console.log(redirurl)
+
+  res.writeHead(302, {'Location': 'https://www.handshake.ws' + req.url});
+  res.end();
+})
+
+
+var httpsServer = https.createServer(credentials, app);
+
+var io = require('socket.io')(httpsServer);
+///////////////////////////////////////////
+// SOCKETS
+
+io.on('connection', function (socket) {
+  console.log("socket connected!")
+
+  socket.on('handshake', function(msg){
+    console.log('message: ' + msg);
+  });
+
 });
+
+httpServer.listen(80);
+httpsServer.listen(443);

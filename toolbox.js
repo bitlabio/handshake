@@ -44,6 +44,9 @@ toolbox.lookupIp = function(ip, cb) {
 
 
 toolbox.lookupGps = function(lat, lon, cb) {
+
+  var found = 0;
+
   db.geolocation.find({latitude: {$lte:lat+1, $gte:lat-1}, longitude: {$lte:lon+1, $gte:lon-1}}, function (err, dbres) {
     console.log(dbres);
     var closest = 99

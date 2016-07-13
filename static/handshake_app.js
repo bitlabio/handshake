@@ -9,7 +9,7 @@ skillsdb.push("Front End Loader RIIMPO321")
 skillsdb.push("Bulldozer RIIMPO323")
 skillsdb.push("Grader RIIMPO324")
 skillsdb.push("Dump Truck RIIMPO337")
-skillsdb.push("Haul Truck RIIMPO337")
+skillsdb.push("Haul Truck RIIMPO338")
 
 
 var state = {
@@ -32,6 +32,11 @@ socket.on('handshake', function(msg){
 	console.log(msg)
 });
 
+function page( path ) {
+		state.url = path
+		window.history.pushState(state, state.url, state.url);
+		render();
+}
 
 function hideall() {
 	$("#name").blur();
@@ -42,6 +47,8 @@ function hideall() {
 	$("#mapblock").hide();
 	$("#profile").hide();
 	$("#profileEmail").hide();
+	$("#profileLocation").hide();
+	$("#profileType").hide();
 	$("#profileSkills").hide();
 	$("#messageBox").hide();
 }
@@ -96,11 +103,55 @@ function renderProfileEmail() {
 		userdata.email = $("#email").val();
 		console.log(userdata)
 
-		state.url = "/profile/skills"
-		window.history.pushState(state, 'Set Skills', '/profile/skills');
+		state.url = "/profile/location"
+		window.history.pushState(state, 'Set Location', '/profile/location');
 		render();	
 	})
 }
+
+
+function renderProfileLocation() {
+	state.url = "/profile/location"
+	$("#profileLocation").fadeIn();
+	$("#location").focus();
+
+	if (userdata.gpslookup) { 
+		if (userdata.gpslookup.city) { 
+			$("#location").val(userdata.gpslookup.city); 	
+		}
+	}
+	
+
+	$("#profilenextLocation").click( function() {
+		userdata.locationCity = $("#location").val();
+		console.log(userdata)
+
+		page("/profile/type")
+		/*state.url = "/profile/skills"
+		window.history.pushState(state, 'Set Skills', '/profile/skills');
+		render();	*/
+	})
+}
+
+
+function renderProfileType() {
+	state.url = "/profile/type"
+	$("#profileType").fadeIn();
+	
+
+	$("#profilenextTypeWorker").click( function() {
+		userdata.usertype = "worker"
+		page("/profile/skills")
+	})
+
+	$("#profilenextTypeContractor").click( function() {
+		userdata.usertype = "contractor"
+		page("/postjob")
+	})	
+}
+
+
+
 
 var skillsadded = []
 
@@ -178,6 +229,8 @@ function renderProfileSkills() {
 		    data: JSON.stringify(userdata) }
 		).done(function( serverresponse ) {
 				$("#messageBoxText").html("SUCCESS. THANK YOU.<br>Keep an eye on your email for jobs.");
+				
+				setTimeout(function(){ page('/'); }, 4000);
 		});
 
 		
@@ -224,13 +277,10 @@ function render() {
 	if (state.url == "/") { renderHome(); }
 	if (state.url == "/profile") { renderProfile(); }
 	if (state.url == "/profile/email") { renderProfileEmail(); }
+	if (state.url == "/profile/location") { renderProfileLocation(); }
+	if (state.url == "/profile/type") { renderProfileType(); }
 	if (state.url == "/profile/skills") { renderProfileSkills(); }
 }
-
-
-
-
-
 
 
 $(document).ready(function() 
@@ -238,7 +288,7 @@ $(document).ready(function()
 	console.log("handshake app loading..")
 
 	console.log("requesting ip information")
-	$.ajax({
+		$.ajax({
     url: '/api/ip',
     type: "GET",
     success: function (ipdata) {
@@ -247,6 +297,7 @@ $(document).ready(function()
     }
 	});
 
+	// USE LOCATION SERVICES
 	console.log("requesting location information")
   if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(geoloc) {
@@ -254,9 +305,22 @@ $(document).ready(function()
       	userdata.geolocation.accuracy = geoloc.coords.accuracy;
       	userdata.geolocation.lat = geoloc.coords.latitude;
       	userdata.geolocation.lon = geoloc.coords.longitude;
+				$.ajax({
+				    url: '/api/gpslookup',
+				    type: 'POST', 
+				    contentType: 'application/json', 
+				    data: JSON.stringify(userdata) }
+				).done(function( serverresponse ) {
+						console.log(serverresponse)
+						userdata.gpslookup = serverresponse
+						if ($("#location").val() == "") {
+							$("#location").val(userdata.gpslookup.city); 		
+						}
+				});
       });
   } 
-      
+    
+  // USE IP ADDRESS  
 	$.ajax({
     url: '/api/location',
     type: "GET",
