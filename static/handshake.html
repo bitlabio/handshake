@@ -8,7 +8,7 @@
 				background: #2b2b2b; 
 				padding: 0em;
 				margin: 0em;
-				color: #c2b3a6; 
+				color: #fff; 
 				font-family: 'helvetica', sans-serif;
 			}
 
@@ -97,6 +97,10 @@
     overflow: hidden;
 }
 
+
+.jobskillreq { cursor: pointer; }
+.jobskillreq:hover { cursor: pointer; }
+
 .skillreq { cursor: pointer; }
 .skillreq:hover { cursor: pointer; }
 
@@ -106,14 +110,12 @@
 		</style>  
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script src="/js/jquery.min.js"></script>
-		<script src="/js/processing.min.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
-		<script src="/handshake_app.js"></script>
+		<script src="/handshake_app.min.js"></script>
 
 	</head>
 
 	<body>
-	<div id="wrapper">
+	<div id="wrapper" style="display:none;">
 
 			<img id="logo" src="/img/logo.jpg" style="width: 185px; max-width: 100%; margin-top: 1em; ">
 
@@ -183,14 +185,17 @@
 
 
 			<div id="profileType" style="margin: 1em;">
-				<h4 id="profileTypeQuestion" style="margin-top: 0em; margin-bottom: 1em; text-align: left;padding-left: 0.5em;">Are looking for work or to hire workers?</h4>
+				<p><span class="namedisplay"></span><br>
+					<span class="locationdisplay"></span><br><br>
+
+				</p>
 				<div class="container">
 		        <div >
-		        	<div id="profilenextTypeWorker" class="smallbutton" style="width: 45%; float:left; height: 40px;">
-		        		I AM LOOKING FOR WORK!
+		        	<div id="profilenextTypeWorker" class="smallbutton" style="width: 45%; float:left; ">
+		        		MY SKILLS
 		        	</div>
-		            <div id="profilenextTypeContractor" class="smallbutton" style="width: 45%; float:right; height: 40px;">
-		            I WANT TO HIRE WORKERS
+		            <div id="hirepeople" class="smallbutton" style="width: 45%; float:right; ">
+		            HIRE PEOPLE
 		            </div>
 		        </div>
 		    </div>
@@ -201,8 +206,8 @@
 			<div id="profileSkills" style="margin: 1em;">
 				<h4 id="profileSkillsQuestion" style="margin-bottom: 0.25em; text-align: left;padding-left: 0em;">What licensed skills do you have?</h4>
 
-				<div id="skillsadded" style="text-align: left; padding: 0.5em; line-height: 2em;"></div>
-				<div id="skillrecommend" style="color: #666; text-align: left; padding: 0.5em ; line-height: 2em;"></div>
+				<div id="skillsadded" style="font-size:12px; font-family: monospace; text-align: left; padding: 0.5em; line-height: 1em;"></div>
+				<div id="skillrecommend" style="font-size:12px; font-family: monospace; color: #888; text-align: left; padding: 0.5em ; line-height: 1em;"></div>
 
 				<div class="container">
 		        <div class="right">
@@ -214,8 +219,57 @@
 		        		</div>
 		        </div>
 		    </div>
-		    
 			</div>
+
+
+
+<!-- HIRE PEOPLE -->
+
+			<div id="postJob" style="margin: 1em;">
+				<h4 style="margin-bottom: 0.25em; text-align: left;padding-left: 0em;">What skills should they have?</h4>
+
+				<div id="jobskills" style="font-size:12px; font-family: monospace; text-align: left; padding: 0.5em; line-height: 1em;"></div>
+				
+
+				<div class="container">
+		        <div class="right">
+		            <div id="jobsearch" class="smallbutton" style="width: auto; ">Search</div>
+		        </div>
+		        <div class="left">
+		        		<div style="padding-right: 1em;">
+		        		<input id="skillinput" class="inputs" style="display:none;padding: 0.5em;width: 100%; ">
+		        		</div>
+		        </div>
+		    </div>
+			</div>
+
+
+
+
+			<div id="postJobResults" style="margin: 1em;">
+				<h4 id="postJobResultsTitle" style="margin-bottom: 0.25em; text-align: left;padding-left: 0em;">searching...</h4>
+
+				<div id="foundpersons" style="font-size:12px; font-family: monospace; text-align: left; padding: 0.5em; line-height: 1.2em;">
+				</div>
+				
+
+				<div class="container">
+		        <div class="right">
+		            <div id="homebutton" class="smallbutton" style="width: auto; ">Done</div>
+		        </div>
+		        <div class="left">
+		        		<div style="padding-right: 1em;">
+		        		<input id="skillinput" class="inputs" style="display:none;padding: 0.5em;width: 100%; ">
+		        		</div>
+		        </div>
+		    </div>
+			</div>
+
+
+
+
+<!-- END -->
+
 
 
 

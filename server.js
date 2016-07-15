@@ -1,14 +1,19 @@
 // handshake.ws server
 var config = {}
 config.db = "handshake"
+//config.env = "production";
+config.env = 'development';
 
 //var env = process.env.NODE_ENV || 'development';
-var env = 'production';
+//var env = 'production';
+
 
 var express   = require('express');
 var app       = express();
 var fs        = require('fs');
 var path      = require("path");
+
+var compression = require('compression')
 
 var http = require('http')
 var https = require('https')
@@ -35,6 +40,7 @@ var bodyParser  = require('body-parser');
 //bitlab custom
 var toolbox = require('./toolbox');
 
+app.use(compression())
 
 app.use(session({
   name: 'session',
@@ -68,7 +74,7 @@ var users = function (req, res, next) {
 		req.session.hash = toolbox.randomHex(64);
 		next()
 	} else {
-		console.log(req.session.hash)
+		//console.log(req.session.hash)
 		next()
 	}
 }
@@ -77,7 +83,7 @@ app.use(users);
 app.use(toolbox.logger);
 
 var apphandler = function (req, res) {
-  console.log(req.headers)
+  //console.log(req.headers)
   
   /*if (req.headers['x-forwarded-proto'] !== 'https') {
     res.redirect(['https://', req.get('Host'), req.url].join(''));
@@ -89,6 +95,7 @@ var apphandler = function (req, res) {
 }
 
 app.get('/', apphandler);
+app.get('/postjob', apphandler);
 app.get('/profile', apphandler);
 app.get('/profile/email', apphandler);
 app.get('/profile/location', apphandler);
@@ -110,25 +117,60 @@ app.get('/admin/userslist', function (req, res) {
 
 app.post('/api/gpslookup', function(req,res) {
   // sends you the location data for a gps location
-  console.log(req.body)
+  //console.log(req.body)
   toolbox.lookupGps(req.body.geolocation.lat, req.body.geolocation.lon, function (dblookup) {
-    console.log(dblookup);
+    //console.log(dblookup);
     res.json(dblookup);
   });
 
 })
 
 app.post('/api/signup', function (req, res) {
-  console.log(req.body)
+  //console.log(req.body)
   var newuser = req.body
   newuser.created = Date.now()
   newuser.sessionhash = req.session.hash
   db.users.save(newuser, function (err, dbres) { res.end("saved"); });
 })
 
-app.get('/api/ip', function (req, res) {
-  var ip = toolbox.cleanIp(req.connection.remoteAddress)
-  res.end(ip)
+
+app.post('/api/skills', function (req, res) {
+  db.users.findOne({sessionhash:req.session.hash}, function (err, user) {
+    user.skills = req.body
+    //console.log(user)
+    db.users.update({sessionhash:req.session.hash}, user, function (err, upd) {
+      console.log(upd)
+      res.end("saved");
+    })
+    
+  })
+  /*
+  console.log(req.body)
+  var newuser = req.body
+  newuser.created = Date.now()
+  newuser.sessionhash = req.session.hash
+  db.users.save(newuser, function (err, dbres) { res.end("saved"); });*/
+})
+
+
+app.post('/api/search', function (req, res) {
+  db.users.find({}, function (err, dbres) {
+    console.log("SEARCHED")
+    res.end(JSON.stringify(dbres)) //CAREFUL!
+  })
+})
+
+/// ON LOAD CHECK SESSION/COOKIE
+app.get('/api/session', function (req, res) {
+  var session = {}
+  session.ip = toolbox.cleanIp(req.connection.remoteAddress)
+
+  db.users.findOne({sessionhash:req.session.hash}, function (err, dbres){
+    //console.log(dbres);
+    session.db = dbres
+    res.end(JSON.stringify(session));
+  })
+
 })
 
 app.get('/api/location', function (req, res) {
@@ -138,19 +180,34 @@ app.get('/api/location', function (req, res) {
 
 
 
-var httpServer = http.createServer(function (req,res) {
-  console.log("REDIRECT TO HTTPS")
-  //var redirurl = ['https://handshake.ws', req.url].join('')
-  //console.log(redirurl)
-
-  res.writeHead(302, {'Location': 'https://www.handshake.ws' + req.url});
-  res.end();
-})
 
 
-var httpsServer = https.createServer(credentials, app);
+var httpServer;
+var httpsServer;
+var io;
 
-var io = require('socket.io')(httpsServer);
+//PRODUCTION
+if (config.env == "production") {
+
+  httpServer = http.createServer(function (req,res) {
+    res.writeHead(302, {'Location': 'https://www.handshake.ws' + req.url});
+    res.end();
+  })
+
+  httpsServer = https.createServer(credentials, app);
+  io = require('socket.io')(httpsServer);
+
+  httpServer.listen(80);
+  httpsServer.listen(443);
+}
+
+//DEVELOPMENT
+if (config.env == "development") {
+  httpServer = http.createServer(app);
+  io = require('socket.io')(httpServer);
+  httpServer.listen(80);
+}
+
 ///////////////////////////////////////////
 // SOCKETS
 
@@ -160,8 +217,6 @@ io.on('connection', function (socket) {
   socket.on('handshake', function(msg){
     console.log('message: ' + msg);
   });
-
 });
 
-httpServer.listen(80);
-httpsServer.listen(443);
+
